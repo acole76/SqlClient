@@ -6,6 +6,7 @@ using System.Data.Odbc;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Linq;
 
 namespace SqlClient
 {
@@ -19,14 +20,15 @@ namespace SqlClient
 		{
 			ArgParse argparse = new ArgParse
 			(
-					new ArgItem("driver", "d", true, "ODBC Driver: mssql,postgresql,firebird,mssql", "mssql", ArgParse.ArgParseType.String),
+					new ArgItem("driver", "d", true, "ODBC Driver", "mssql", ArgParse.ArgParseType.Choice, new string[] { "mssql", "postgresql", "firebird", "mssql", "excel" }),
 					new ArgItem("username", "u", true, "username", "", ArgParse.ArgParseType.String),
 					new ArgItem("password", "p", true, "password", "", ArgParse.ArgParseType.String),
 					new ArgItem("host", "i", true, "the host name of the server", "", ArgParse.ArgParseType.String),
 					new ArgItem("catalog", "c", true, "The catalog or database", "", ArgParse.ArgParseType.String),
-					new ArgItem("sql", "s", true, "The sql statement to execute", "", ArgParse.ArgParseType.String),
-					new ArgItem("output", "o", false, "Output type: csv,json", "json", ArgParse.ArgParseType.String),
-					new ArgItem("url", "e", false, "url where data will be posted", "", ArgParse.ArgParseType.String)
+					new ArgItem("sql", "s", true, "The sql statement to execute.", "", ArgParse.ArgParseType.String),
+					new ArgItem("filter", "f", false, "Used with schema requests to filter by column or table.", "", ArgParse.ArgParseType.String),
+					new ArgItem("output", "o", false, "Output type: csv,json", "json", ArgParse.ArgParseType.Choice, new string[] { "csv", "json" }),
+					new ArgItem("url", "e", false, "url where data will be posted", "", ArgParse.ArgParseType.Url)
 			);
 
 			argparse.parse(args);
@@ -43,6 +45,7 @@ namespace SqlClient
 			string host = argparse.Get<string>("host");
 			string database = argparse.Get<string>("catalog");
 			string sql = argparse.Get<string>("sql");
+			string filter = argparse.Get<string>("filter");
 			string output = argparse.Get<string>("output");
 			string url = argparse.Get<string>("url");
 
@@ -58,9 +61,39 @@ namespace SqlClient
 				{	
 					connection.Open();
 
-					OdbcCommand cmd = new OdbcCommand(sql, connection);
-					OdbcDataReader dataReader = cmd.ExecuteReader();
-					dt.Load(dataReader);
+					if(sql.ToLower().StartsWith("schema:"))
+					{
+						string[] parts = sql.Split(':');
+						if(parts.Length == 2)
+						{
+							DataTable schemaDT = new DataTable("schema");
+							if (parts[1].ToLower() == "tables")
+							{
+								schemaDT = connection.GetSchema("Tables");
+							}
+
+							if (parts[1].ToLower() == "columns")
+							{
+								schemaDT = connection.GetSchema("Columns");
+							}
+
+							if (filter != null && filter.Length > 0)
+							{
+								DataRow[] rows = schemaDT.Select(filter);
+								dt = rows.CopyToDataTable();
+							}
+							else
+							{
+								dt = schemaDT;
+							}
+						}
+					}
+					else
+					{
+						OdbcCommand cmd = new OdbcCommand(sql, connection);
+						OdbcDataReader dataReader = cmd.ExecuteReader();
+						dt.Load(dataReader);
+					}
 				}
 				catch(Exception ex)
 				{
@@ -74,7 +107,6 @@ namespace SqlClient
 					}
 				}
 
-
 				string result = "";
 				if (output.ToLower() == "csv")
 				{
@@ -86,9 +118,9 @@ namespace SqlClient
 					result = DataTableToJson(dt);
 				}
 
-				if (url.Length == 0)
+				if (url == null || url.Length == 0)
 				{
-					Console.WriteLine(DataTableToCsv(dt));
+					Console.WriteLine(result);
 				}
 				else
 				{

@@ -35,6 +35,7 @@ namespace SqlClient
 			driverDict.Add("mysql", "mysql");
 			driverDict.Add("firebird", "firebird");
 			driverDict.Add("postgresql", "postgresql");
+			driverDict.Add("excel", "*.xlsx");
 
 			string driver = argparse.Get<string>("driver");
 			string username = argparse.Get<string>("username");
@@ -46,18 +47,33 @@ namespace SqlClient
 			string url = argparse.Get<string>("url");
 
 			ListODBCDrivers();
-
-			if(DriverExists(driver))
+			//C:\Users\Owner\Downloads\portal.xlsx
+			if (DriverExists(driver))
 			{
 				string connectionString = string.Format(getConnectionString(driver), host, database, username, password);
-
-				OdbcConnection connection = new OdbcConnection(connectionString);
-				connection.Open();
-
-				OdbcCommand cmd = new OdbcCommand(sql, connection);
-				OdbcDataReader dataReader = cmd.ExecuteReader();
 				DataTable dt = new DataTable("table");
-				dt.Load(dataReader);
+				OdbcConnection connection = new OdbcConnection(connectionString);
+
+				try
+				{	
+					connection.Open();
+
+					OdbcCommand cmd = new OdbcCommand(sql, connection);
+					OdbcDataReader dataReader = cmd.ExecuteReader();
+					dt.Load(dataReader);
+				}
+				catch(Exception ex)
+				{
+					Console.WriteLine(ex.Message);
+				}
+				finally
+				{
+					if (connection.State == ConnectionState.Open)
+					{
+						connection.Close();
+					}
+				}
+
 
 				string result = "";
 				if (output.ToLower() == "csv")
@@ -79,9 +95,6 @@ namespace SqlClient
 					WebClient wc = new WebClient();
 					wc.UploadString(url, result);
 				}
-
-
-				connection.Close();
 			}
 			else
 			{
@@ -96,7 +109,7 @@ namespace SqlClient
 
 		public static string DataTableToJson(DataTable dt)
 		{
-			return DataTableToJSONWithStringBuilder(dt);
+			return ToJSON(dt);
 		}
 
 		private static string getConnectionString(string driver)
@@ -105,14 +118,18 @@ namespace SqlClient
 			switch (driver.ToLower())
 			{
 				case "mysql":
-					string driverString = GetMySqlDriver();
-					cs = "Driver={{"+driverString+"}};Server={0};Database={1};Uid={2};Pwd={3};";
+					string mysqlDriverString = GetMySqlDriver();
+					cs = "Driver={{"+mysqlDriverString+"}};Server={0};Database={1};Uid={2};Pwd={3};";
 					break;
-				case "postgres":
-					cs = "Driver={{PostgreSQL}};Server={0};Database={1};Uid={2};Pwd={3};";
+				case "postgresql":
+					string postgreDriverString = GetPostgreDriver();
+					cs = "Driver={{" + postgreDriverString + "}};Server={0};Database={1};Uid={2};Pwd={3};";
 					break;
 				case "firebird":
 					cs = "Driver=Firebird/InterBase(r) driver;DBNAME={0}:{1};UID={2};PWD={3};";
+					break;
+				case "excel":
+					cs = "Driver={{Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)}};DBQ={1};";
 					break;
 				default:
 					cs = "Driver={{SQL Server}};Server={0};Database={1};Uid={2};Pwd={3};";
@@ -156,6 +173,21 @@ namespace SqlClient
 			return cs;
 		}
 
+		public static string GetPostgreDriver()
+		{
+			string cs = "";
+
+			foreach (string d in driverList)
+			{
+				if (d.ToLower().Contains("postgresql"))
+				{
+					return d;
+				}
+			}
+
+			return cs;
+		}
+
 		public static List<string> ListODBCDrivers()
 		{
 			//https://stackoverflow.com/questions/6457973/odbc-driver-list-from-net
@@ -189,7 +221,7 @@ namespace SqlClient
 			return driverList;
 		}
 
-		private static string DataTableToJSONWithStringBuilder(DataTable table)
+		private static string ToJSON(DataTable table)
 		{
 			//https://www.c-sharpcorner.com/UploadFile/9bff34/3-ways-to-convert-datatable-to-json-string-in-Asp-Net-C-Sharp/
 			var JSONString = new StringBuilder();

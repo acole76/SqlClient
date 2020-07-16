@@ -15,7 +15,6 @@ namespace SqlClient
 		public static List<string> driverList = new List<string>();
 		public static Dictionary<string, string> driverDict = new Dictionary<string, string>();
 
-
 		static void Main(string[] args)
 		{
 			ArgParse argparse = new ArgParse

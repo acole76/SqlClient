@@ -21,26 +21,69 @@ Usage: SqlClient.exe <options>
 
 SqlClient uses the installed ODBC drivers on a system to query local or remote databases.  The application will attempt to detect if the selected ODBC driver is installed, if it is not found, the program will exit, otherwise, the SQL statement will be executed.
 
+#### Architecture Notes
+
+Windows maintains two sets of ODBC drivers, x86 and x64.  It is not possible to access an x86 ODBC driver from a x64 process and vice-versa.
+
 ### Supported Applications
+- Access
 - Excel
 - Firebird
 - MSSQL
 - MySql
 - Postgre
 
-### Schema Sub-Commands
+---
+
+## Example Usage
+
+### Access
+pass in an empty string for username, password and host.  The -c switch should be the full path to the access database.
+```
+SqlClient.exe -d access -u "" -p "" -i "" -c "C:\path\to\folder\file.accdb" -s "select * from clients" -o json
+```
+
+### Excel
+pass in an empty string for username, password and host.  The -c switch should be the full path to the excel spreadsheet.
+```
+SqlClient.exe -d excel -u "" -p "" -i "" -c "C:\path\to\folder\file.xlsx" -s "select * from [clients$]" -o json
+```
+
+### Postgre
+```
+SqlClient.exe -d postgresql -u postgres -p PASSWORD -i 127.0.0.1 -c somedb -s "select * from clients" -o csv
+```
+
+### Firebird
+```
+SqlClient.exe -d firebird -u SYSDBA -p masterkey -i 127.0.0.1 -c somedb -s "select * from clients" -o csv
+```
+
+### Mysql
+```
+SqlClient.exe -d mysql -u root -p PASSWORD -i 127.0.0.1 -c somedb -s "select * from clients" -o csv
+```
+
+### MSSQL
+```
+SqlClient.exe -d mssql -u root -p PASSWORD -i 127.0.0.1 -c somedb -s "select * from clients" -o csv
+```
+
+---
+
+## Schema Sub-Commands
 
 #### Get tables
 ```
--d excel -u "" -p "" -i "" -c "C:\path\to\folder\file.xlsx" -s "schema:tables" -o json
+SqlClient.exe -d excel -u "" -p "" -i "" -c "C:\path\to\folder\file.xlsx" -s "schema:tables" -o json
 ```
 #### Get columns
 ```
--d excel -u "" -p "" -i "" -c "C:\path\to\folder\file.xlsx" -s "schema:columns" -o json
+SqlClient.exe -d excel -u "" -p "" -i "" -c "C:\path\to\folder\file.xlsx" -s "schema:columns" -o json
 ```
 #### Filter schema using Linq .Select()
 ```
--d excel -u "" -p "" -i "" -c "C:\path\to\folder\file.xlsx" -s "schema:columns" -f "COLUMN_NAME = 'city'" -o json
+SqlClient.exe -d excel -u "" -p "" -i "" -c "C:\path\to\folder\file.xlsx" -s "schema:columns" -f "COLUMN_NAME = 'city'" -o json
 ```
 ##### Table fields
 - TABLE_CAT
@@ -69,31 +112,3 @@ SqlClient uses the installed ODBC drivers on a system to query local or remote d
 - TABLE_NAME
 - TABLE_TYPE
 - REMARKS
-
-## Example Usage
-
-### Excel
-pass in an empty string for username, password and host.  The -c switch should be the full path to the excel file.
-```
-SqlClient.exe -d excel -u "" -p "" -i "" -c "C:\path\to\folder\file.xlsx" -s "select * from [clients$]" -o json
-```
-
-### Postgre
-```
-SqlClient.exe -d postgresql -u postgres -p PASSWORD -i 127.0.0.1 -c somedb -s "select * from clients" -o csv
-```
-
-### Firebird
-```
-SqlClient.exe -d firebird -u SYSDBA -p masterkey -i 127.0.0.1 -c somedb -s "select * from clients" -o csv
-```
-
-### Mysql
-```
-SqlClient.exe -d mysql -u root -p PASSWORD -i 127.0.0.1 -c somedb -s "select * from clients" -o csv
-```
-
-### MSSQL
-```
-SqlClient.exe -d mssql -u root -p PASSWORD -i 127.0.0.1 -c somedb -s "select * from clients" -o csv
-```

@@ -20,7 +20,7 @@ namespace SqlClient
 		{
 			ArgParse argparse = new ArgParse
 			(
-					new ArgItem("driver", "d", true, "ODBC Driver", "mssql", ArgParse.ArgParseType.Choice, new string[] { "mssql", "postgresql", "firebird", "mssql", "excel" }),
+					new ArgItem("driver", "d", true, "ODBC Driver", "mssql", ArgParse.ArgParseType.Choice, new string[] { "mssql", "postgresql", "firebird", "mssql", "excel", "access" }),
 					new ArgItem("username", "u", true, "username", "", ArgParse.ArgParseType.String),
 					new ArgItem("password", "p", true, "password", "", ArgParse.ArgParseType.String),
 					new ArgItem("host", "i", true, "the host name of the server", "", ArgParse.ArgParseType.String),
@@ -38,6 +38,7 @@ namespace SqlClient
 			driverDict.Add("firebird", "firebird");
 			driverDict.Add("postgresql", "postgresql");
 			driverDict.Add("excel", "*.xlsx");
+			driverDict.Add("access", "*.accdb");
 
 			string driver = argparse.Get<string>("driver");
 			string username = argparse.Get<string>("username");
@@ -162,6 +163,9 @@ namespace SqlClient
 					break;
 				case "excel":
 					cs = "Driver={{Microsoft Excel Driver (*.xls, *.xlsx, *.xlsm, *.xlsb)}};DBQ={1};";
+					break;
+				case "access":
+					cs = "Driver={{Microsoft Access Driver (*.mdb, *.accdb)}};DBQ={1};";
 					break;
 				default:
 					cs = "Driver={{SQL Server}};Server={0};Database={1};Uid={2};Pwd={3};";

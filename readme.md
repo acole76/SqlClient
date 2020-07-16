@@ -31,7 +31,7 @@ Windows maintains two sets of ODBC drivers, x86 and x64.  It is not possible to 
 - Firebird
 - MSSQL
 - MySql
-- Postgre
+- Postgres
 
 ---
 
@@ -49,7 +49,7 @@ pass in an empty string for username, password and host.  The -c switch should b
 SqlClient.exe -d excel -u "" -p "" -i "" -c "C:\path\to\folder\file.xlsx" -s "select * from [clients$]" -o json
 ```
 
-### Postgre
+### Postgres
 ```
 SqlClient.exe -d postgresql -u postgres -p PASSWORD -i 127.0.0.1 -c somedb -s "select * from clients" -o csv
 ```

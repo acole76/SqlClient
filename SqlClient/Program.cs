@@ -14,6 +14,7 @@ namespace SqlClient
 	{
 		public static List<string> driverList = new List<string>();
 		public static Dictionary<string, string> driverDict = new Dictionary<string, string>();
+		public static bool is64bit = (IntPtr.Size == 8);
 
 		static void Main(string[] args)
 		{
@@ -130,7 +131,13 @@ namespace SqlClient
 			}
 			else
 			{
-				Console.WriteLine(string.Format("ODBC Drive {0} does not exist", driver));
+				string bitString = "x86";
+				if(is64bit)
+				{
+					bitString = "x64";
+				}
+
+				Console.WriteLine(string.Format("ODBC Driver {0} does not exist.  Is the {1} version of the driver installed on this machine?", driver, bitString));
 			}
 		}
 

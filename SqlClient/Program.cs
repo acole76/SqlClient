@@ -20,7 +20,7 @@ namespace SqlClient
 		{
 			ArgParse argparse = new ArgParse
 			(
-					new ArgItem("driver", "d", true, "ODBC Driver", "mssql", ArgParse.ArgParseType.Choice, new string[] { "mssql", "postgresql", "firebird", "mssql", "excel", "access" }),
+					new ArgItem("driver", "d", true, "ODBC Driver", "mssql", ArgParse.ArgParseType.Choice, new string[] { "mysql", "postgresql", "firebird", "mssql", "excel", "access" }),
 					new ArgItem("username", "u", true, "username", "", ArgParse.ArgParseType.String),
 					new ArgItem("password", "p", true, "password", "", ArgParse.ArgParseType.String),
 					new ArgItem("host", "i", true, "the host name of the server", "", ArgParse.ArgParseType.String),
